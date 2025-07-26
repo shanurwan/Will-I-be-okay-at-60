@@ -6,8 +6,6 @@ A production-ready ML pipeline that predicts retirement readiness score for Mala
 
 ## Data
 
-Due data inavailability, the initial stage used simulated data grounded in real world statistic
-
 [Click here to see more](https://github.com/shanurwan/Malaysian-Retirement-Dataset)
 
 ---
