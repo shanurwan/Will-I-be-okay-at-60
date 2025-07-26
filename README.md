@@ -2,6 +2,17 @@
 
 A production-ready ML pipeline that predicts retirement readiness score for Malaysians using financial, medical, and psychological features. 
 
+## Problem Statement 
+
+As more Malaysians face retirement without adequate planning, this ML pipeline serves as a decision-support system.
+It helps assess whether a person readiness score for retirement at 60 based on:
+
+- Financial savings
+- Health status
+- Mental well-being
+- Family burden
+- Lifestyle (Upcoming)
+
 ---
 
 ## Data
@@ -18,17 +29,6 @@ A production-ready ML pipeline that predicts retirement readiness score for Mala
 - Improve prediction quality over time using feedback loop
 
 ---
-
-## Problem Statement 
-
-As more Malaysians face retirement without adequate planning, this ML pipeline serves as a decision-support system.
-It helps assess whether a person readiness score for retirement at 60 based on:
-
-- Financial savings
-- Health status
-- Mental well-being
-- Family burden
-- Lifestyle (Upcoming)
 
 ## Project Structure
 
