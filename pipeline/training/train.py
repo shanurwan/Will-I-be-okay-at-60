@@ -7,13 +7,25 @@ import mlflow
 import joblib
 
 FEATURES = [
-    "age", "gender", "state", "monthly_income", "epf_balance", "debt_amount",
-    "household_size", "has_chronic_disease", "medical_expense_monthly",
-    "mental_stress_level", "expected_monthly_expense", "has_spouse",
-    "num_children", "supports_others", "is_supported"
+    "age",
+    "gender",
+    "state",
+    "monthly_income",
+    "epf_balance",
+    "debt_amount",
+    "household_size",
+    "has_chronic_disease",
+    "medical_expense_monthly",
+    "mental_stress_level",
+    "expected_monthly_expense",
+    "has_spouse",
+    "num_children",
+    "supports_others",
+    "is_supported",
 ]
 
 TARGET = "score"
+
 
 def preprocess(df):
     data = data.copy()
@@ -29,10 +41,12 @@ def preprocess(df):
 
     return data
 
+
 def train_model(X_train, y_train, n_estimators=100):
     model = RandomForestRegressor(n_estimators=n_estimators, random_state=42)
     model.fit(X_train, y_train)
     return model
+
 
 def evaluate_model(model, X_test, y_test):
     y_pred = model.predict(X_test)
@@ -40,8 +54,10 @@ def evaluate_model(model, X_test, y_test):
     mae = mean_absolute_error(y_test, y_pred)
     return r2, mae
 
+
 def save_model(model, path):
     joblib.dump(model, path)
+
 
 if __name__ == "__main__":
     mlflow.set_tracking_uri("file:./mlruns")
@@ -54,7 +70,9 @@ if __name__ == "__main__":
     X = data.drop(columns=[TARGET])
     y = data[TARGET]
 
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
 
     with mlflow.start_run():
         model = train_model(X_train, y_train)
