@@ -11,7 +11,7 @@ It helps assess whether a person readiness score for retirement at 60 based on:
 - Health status
 - Mental well-being
 - Family burden
-- Lifestyle (Upcoming)
+- Lifestyle 
 
 ---
 
