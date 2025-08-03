@@ -43,7 +43,7 @@ build/
 dist/
 *.egg-info/
 
-# Notebooks outputs (optional)
+# Notebooks outputs 
 *.out
 
 # Personal debug or config files
@@ -51,9 +51,5 @@ dist/
 *.swp
 *.swo
 
-# Data files (optional)
-*.csv
-*.json
-*.xlsx
-data/
+# Data files 
 output/
