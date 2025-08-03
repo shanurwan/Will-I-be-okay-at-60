@@ -1,0 +1,17 @@
+
+data:
+  input_path: "data/input/retirement.csv"
+  model_path: "data/models/model_v1.pkl"
+
+training:
+  test_size: 0.2
+  random_state: 42
+  n_estimators: 100
+
+monitoring:
+  drift_threshold: 0.15
+  retrain_frequency: "monthly"
+
+mlflow:
+  tracking_uri: "file:./mlruns"
+  experiment_name: "retirement_model"
