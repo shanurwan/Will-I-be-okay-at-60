@@ -1,0 +1,29 @@
+age
+gender
+monthly_income
+epf_balance
+debt_amount
+household_size
+has_chronic_disease
+medical_expense_monthly
+mental_stress_level
+expected_monthly_expense
+has_spouse
+num_children
+supports_others
+is_supported
+state_Kedah
+state_Kelantan
+state_Melaka
+state_Negeri Sembilan
+state_Pahang
+state_Perak
+state_Perlis
+state_Pulau Pinang
+state_Sabah
+state_Sarawak
+state_Selangor
+state_Terengganu
+state_W.P. Kuala Lumpur
+state_W.P. Labuan
+state_W.P. Putrajaya

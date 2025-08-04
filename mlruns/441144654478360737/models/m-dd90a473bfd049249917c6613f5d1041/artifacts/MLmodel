@@ -1,0 +1,22 @@
+artifact_path: file:C:/Users/user/Documents/Shafiqah/Project/Retirement/mlruns/441144654478360737/models/m-dd90a473bfd049249917c6613f5d1041/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.12.9
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.6.1
+mlflow_version: 3.1.1
+model_id: m-dd90a473bfd049249917c6613f5d1041
+model_size_bytes: 7293036
+model_uuid: m-dd90a473bfd049249917c6613f5d1041
+prompts: null
+run_id: 24006eb3d9bb4538b8367b5a0e3724b3
+utc_time_created: '2025-08-04 05:42:59.573419'
