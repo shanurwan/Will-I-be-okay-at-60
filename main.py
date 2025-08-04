@@ -61,7 +61,6 @@ def save_feedback(input_dict, model_score, user_score, feedback):
         st.error(f"Failed to submit feedback: {e}")
 
 
-
 st.title("Malaysian Retirement Readiness Predictor")
 st.header("Predict for a single user")
 
