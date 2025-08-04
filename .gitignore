@@ -54,3 +54,5 @@ dist/
 # Streamlist secret
 /.streamlit/secrets.toml
 
+# webhook key
+key.b64
