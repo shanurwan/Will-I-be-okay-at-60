@@ -51,4 +51,6 @@ dist/
 *.swp
 *.swo
 
+# Streamlist secret
+/.streamlit/secrets.toml
 
