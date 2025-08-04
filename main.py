@@ -6,13 +6,6 @@ from datetime import datetime
 from pipeline.training.train import preprocess
 import streamlit as st
 
-if "sheet_id" not in st.secrets:
-    st.error(
-        " Missing `sheet_id` in Streamlit Secrets!\n"
-        "Open Settings → Secrets and add:\n"
-        'sheet_id = "<your-sheet-id>"'
-    )
-    st.stop()
 
 
 MODEL_PATH = "data/models/model_v1.pkl"
@@ -191,5 +184,13 @@ if st.session_state.get("shown_prediction", False):
                 save_feedback(input_dict, score_rounded, user_score, feedback)
                 st.success("Thank you for your feedback!")
                 st.session_state["shown_prediction"] = False
+
+                if "sheet_id" not in st.secrets:
+    st.error(
+        " Missing `sheet_id` in Streamlit Secrets!\n"
+        "Open Settings → Secrets and add:\n"
+        "sheet_id = \"<your-sheet-id>\""
+    )
+    st.stop()
 
 st.caption("by Wan Nur Shafiqah, 2025")
