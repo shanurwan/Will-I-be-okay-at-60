@@ -1,6 +1,6 @@
 
 data:
-  input_path: "data/input/retirement.csv"
+  input_path: "data/input/retire.csv"
   model_path: "data/models/model_v1.pkl"
 
 training:

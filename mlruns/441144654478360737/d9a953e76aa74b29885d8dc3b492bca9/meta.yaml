@@ -1,0 +1,14 @@
+artifact_uri: file:C:/Users/user/Documents/Shafiqah/Project/Retirement/mlruns/441144654478360737/d9a953e76aa74b29885d8dc3b492bca9/artifacts
+end_time: 1754282294536
+entry_point_name: ''
+experiment_id: '441144654478360737'
+lifecycle_stage: active
+run_id: d9a953e76aa74b29885d8dc3b492bca9
+run_name: resilient-bug-148
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1754282285975
+status: 3
+tags: []
+user_id: user

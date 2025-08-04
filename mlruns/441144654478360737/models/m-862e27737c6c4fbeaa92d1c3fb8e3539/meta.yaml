@@ -1,0 +1,10 @@
+artifact_location: file:C:/Users/user/Documents/Shafiqah/Project/Retirement/mlruns/441144654478360737/models/m-862e27737c6c4fbeaa92d1c3fb8e3539/artifacts
+creation_timestamp: 1754282286670
+experiment_id: '441144654478360737'
+last_updated_timestamp: 1754282294478
+model_id: m-862e27737c6c4fbeaa92d1c3fb8e3539
+model_type: null
+name: model
+source_run_id: d9a953e76aa74b29885d8dc3b492bca9
+status: 2
+status_message: null
