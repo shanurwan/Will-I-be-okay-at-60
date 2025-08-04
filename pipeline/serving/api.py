@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
 import pandas as pd
-import os
+
 
 from pipeline.training.train import preprocess
 
@@ -10,6 +10,7 @@ MODEL_PATH = "data/models/model_v1.pkl"
 FEATURES_PATH = "data/models/features.txt"
 
 app = FastAPI()
+
 
 class InputData(BaseModel):
     age: int
@@ -28,9 +29,11 @@ class InputData(BaseModel):
     supports_others: bool
     is_supported: bool
 
+
 def load_features():
     with open(FEATURES_PATH) as f:
         return [line.strip() for line in f]
+
 
 def align_features(df, features):
     for col in features:
@@ -38,12 +41,15 @@ def align_features(df, features):
             df[col] = 0
     return df[features]
 
+
 model = joblib.load(MODEL_PATH)
 FEATURES = load_features()
+
 
 @app.get("/")
 def read_root():
     return {"message": "Retirement Prediction API"}
+
 
 @app.post("/predict")
 def predict(data: InputData):
@@ -53,4 +59,3 @@ def predict(data: InputData):
     df = align_features(df, FEATURES)
     prediction = model.predict(df)[0]
     return {"retirement_readiness_score": round(prediction, 3)}
-

@@ -9,14 +9,17 @@ MODEL_PATH = "data/models/model_v1.pkl"
 FEATURES_PATH = "data/models/features.txt"
 FEEDBACK_PATH = "data/output/user_feedback.csv"
 
+
 @st.cache_resource
 def load_model():
     return joblib.load(MODEL_PATH)
+
 
 @st.cache_resource
 def load_features():
     with open(FEATURES_PATH) as f:
         return [line.strip() for line in f]
+
 
 def align_features(df, features):
     for col in features:
@@ -25,8 +28,9 @@ def align_features(df, features):
     df = df[features]
     return df
 
+
 def readiness_status(score):
-   
+
     if score >= 0.7:
         return "READY for retirement", (
             "Your score is high. This usually means you have healthy income, "
@@ -37,6 +41,7 @@ def readiness_status(score):
             "Your score is low. Common reasons: insufficient savings, high debt, "
             "high expenses, or medical/household challenges."
         )
+
 
 def save_feedback(input_dict, model_score, user_score, feedback):
     data = {
@@ -52,6 +57,7 @@ def save_feedback(input_dict, model_score, user_score, feedback):
             writer.writeheader()
         writer.writerow(data)
 
+
 st.title("Malaysian Retirement Readiness Predictor")
 
 st.header("Predict for a single user")
@@ -59,11 +65,25 @@ with st.form("single_form"):
     age = st.number_input("Age", 40, 100, 55)
     gender = st.selectbox("Gender", ["Male", "Female"])
     state = st.selectbox(
-        "State", [
-            "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan", "Pahang", "Penang",
-            "Perak", "Perlis", "Sabah", "Sarawak", "Selangor", "Terengganu",
-            "W.P. Kuala Lumpur", "W.P. Labuan", "W.P. Putrajaya"
-        ]
+        "State",
+        [
+            "Johor",
+            "Kedah",
+            "Kelantan",
+            "Melaka",
+            "Negeri Sembilan",
+            "Pahang",
+            "Penang",
+            "Perak",
+            "Perlis",
+            "Sabah",
+            "Sarawak",
+            "Selangor",
+            "Terengganu",
+            "W.P. Kuala Lumpur",
+            "W.P. Labuan",
+            "W.P. Putrajaya",
+        ],
     )
     monthly_income = st.number_input("Monthly Income", 0, 100_000, 3000)
     epf_balance = st.number_input("EPF Balance", 0, 1_000_000, 40_000)
@@ -72,7 +92,9 @@ with st.form("single_form"):
     has_chronic_disease = st.checkbox("Has Chronic Disease?")
     medical_expense_monthly = st.number_input("Monthly Medical Expense", 0, 10_000, 0)
     mental_stress_level = st.slider("Mental Stress Level", 0.0, 1.0, 0.5)
-    expected_monthly_expense = st.number_input("Expected Monthly Expense", 0, 20_000, 1500)
+    expected_monthly_expense = st.number_input(
+        "Expected Monthly Expense", 0, 20_000, 1500
+    )
     has_spouse = st.checkbox("Has Spouse?")
     num_children = st.slider("Number of Children", 0, 10, 1)
     supports_others = st.checkbox("Supports Others?")
@@ -110,12 +132,19 @@ with st.form("single_form"):
         st.info(f"{status}\n\n{reason}")
 
         st.markdown("### Was this prediction accurate for you?")
-        feedback = st.radio("How satisfied are you with the prediction?", 
-                            ["Very Satisfied", "Satisfied", "Not Satisfied"])
+        feedback = st.radio(
+            "How satisfied are you with the prediction?",
+            ["Very Satisfied", "Satisfied", "Not Satisfied"],
+        )
         user_score = None
         if feedback == "Not Satisfied":
-            user_score = st.number_input("What do you think your real readiness score should be?", 
-                                         min_value=0.0, max_value=1.0, value=score_rounded, step=0.01)
+            user_score = st.number_input(
+                "What do you think your real readiness score should be?",
+                min_value=0.0,
+                max_value=1.0,
+                value=score_rounded,
+                step=0.01,
+            )
         if st.button("Submit Feedback"):
             save_feedback(input_dict, score_rounded, user_score, feedback)
             st.success("Thank you for your feedback!")
@@ -131,8 +160,10 @@ if uploaded_file is not None:
     model = load_model()
     data["predicted_score"] = model.predict(data_prep)
     st.write("Predictions:", data[["predicted_score"]].head())
-    st.download_button("Download predictions as CSV", data.to_csv(index=False), file_name="predictions.csv")
+    st.download_button(
+        "Download predictions as CSV",
+        data.to_csv(index=False),
+        file_name="predictions.csv",
+    )
 
 st.caption("by Wan Nur Shafiqah, 2025")
-
-

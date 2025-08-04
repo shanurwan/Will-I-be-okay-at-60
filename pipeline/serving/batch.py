@@ -1,6 +1,5 @@
 import pandas as pd
 import joblib
-import os
 from pipeline.training.train import preprocess, TARGET
 
 
@@ -9,15 +8,18 @@ FEATURES_PATH = "data/models/features.txt"
 INPUT_PATH = "data/input/retire.csv"
 OUTPUT_PATH = "data/output/predictions.csv"
 
+
 def load_features():
     with open(FEATURES_PATH) as f:
         return [line.strip() for line in f]
+
 
 def align_features(df, features):
     for col in features:
         if col not in df.columns:
             df[col] = 0
     return df[features]
+
 
 def main():
     print("Loading model...")
@@ -35,7 +37,6 @@ def main():
     else:
         X = data_processed
 
-    
     X = align_features(X, features)
 
     print("Making predictions...")
@@ -46,6 +47,7 @@ def main():
     data.to_csv(OUTPUT_PATH, index=False)
 
     print(f"Predictions saved to {OUTPUT_PATH}")
+
 
 if __name__ == "__main__":
     main()

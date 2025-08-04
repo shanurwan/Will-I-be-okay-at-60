@@ -9,6 +9,7 @@ from utils.config import load_config
 
 TARGET = "score"
 
+
 def preprocess(df):
     df = df.copy()
     df["gender"] = df["gender"].map({"Male": 0, "Female": 1})
@@ -19,10 +20,12 @@ def preprocess(df):
     df = pd.get_dummies(df, columns=["state"], drop_first=True)
     return df
 
+
 def train_model(X_train, y_train, n_estimators):
     model = RandomForestRegressor(n_estimators=n_estimators, random_state=42)
     model.fit(X_train, y_train)
     return model
+
 
 def evaluate_model(model, X_test, y_test):
     y_pred = model.predict(X_test)
@@ -30,13 +33,16 @@ def evaluate_model(model, X_test, y_test):
     mae = mean_absolute_error(y_test, y_pred)
     return r2, mae
 
+
 def save_model(model, path):
     joblib.dump(model, path)
+
 
 def save_features(features, path):
     with open(path, "w") as f:
         for col in features:
             f.write(f"{col}\n")
+
 
 if __name__ == "__main__":
 
@@ -58,7 +64,7 @@ if __name__ == "__main__":
     df = preprocess(df)
     X = df.drop(columns=[TARGET])
     y = df[TARGET]
-    FEATURES = X.columns.tolist() 
+    FEATURES = X.columns.tolist()
 
     save_features(FEATURES, features_path)
 
@@ -67,7 +73,7 @@ if __name__ == "__main__":
     )
 
     with mlflow.start_run():
-       
+
         model = train_model(X_train, y_train, n_estimators)
         r2, mae = evaluate_model(model, X_test, y_test)
         mlflow.log_param("n_estimators", n_estimators)
