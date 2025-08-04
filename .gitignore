@@ -51,5 +51,4 @@ dist/
 *.swp
 *.swo
 
-# Data files 
-output/
+
