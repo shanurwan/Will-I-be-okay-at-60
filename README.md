@@ -60,7 +60,7 @@ Data Documentation = [Click here](https://github.com/shanurwan/Malaysian-Retirem
 
 ```
 retirement_project/
-├── data/                  # Data storage
+├── data/                  # Data  storage
 │   ├── input/             # Raw inputs (CSV)
 │   └── models/            # Artifacts: models, feature stores
 ├── pipeline/              # Core ML scripts
