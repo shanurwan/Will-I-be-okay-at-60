@@ -1,47 +1,12 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import gspread
+import requests
 from datetime import datetime
 from pipeline.training.train import preprocess
 
-
 MODEL_PATH = "data/models/model_v1.pkl"
 FEATURES_PATH = "data/models/features.txt"
-
-
-@st.cache_resource
-def get_sheet():
-    creds_info = dict(st.secrets["gcp_service_account"])
-    creds_info["private_key"] = creds_info["private_key"].replace("\\n", "\n")
-    client = gspread.service_account_from_dict(creds_info)
-    return client.open_by_key(st.secrets["sheet_id"]).sheet1
-
-
-def save_feedback(input_dict, model_score, user_score, feedback):
-    sheet = get_sheet()
-    row = [
-        input_dict["age"],
-        input_dict["gender"],
-        input_dict["state"],
-        input_dict["monthly_income"],
-        input_dict["epf_balance"],
-        input_dict["debt_amount"],
-        input_dict["household_size"],
-        int(input_dict["has_chronic_disease"]),
-        input_dict["medical_expense_monthly"],
-        input_dict["mental_stress_level"],
-        input_dict["expected_monthly_expense"],
-        int(input_dict["has_spouse"]),
-        input_dict["num_children"],
-        int(input_dict["supports_others"]),
-        int(input_dict["is_supported"]),
-        model_score,
-        user_score if user_score is not None else "",
-        feedback,
-        datetime.utcnow().isoformat(),
-    ]
-    sheet.append_row(row, value_input_option="USER_ENTERED")
 
 
 @st.cache_resource
@@ -68,17 +33,29 @@ def readiness_status(score):
             "Your score is high. This usually means you have healthy income, "
             "good savings, and manageable expenses/debt."
         )
-    else:
-        return "NOT READY yet", (
-            "Your score is low. Common reasons: insufficient savings, high debt, "
-            "high expenses, or medical/household challenges."
-        )
+    return "NOT READY yet", (
+        "Your score is low. Common reasons: insufficient savings, high debt, "
+        "high expenses, or medical/household challenges."
+    )
 
 
+def save_feedback(input_dict, model_score, user_score, feedback):
+    payload = {
+        **input_dict,
+        "model_score": model_score,
+        "user_score": user_score,
+        "feedback": feedback,
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+    response = requests.post(st.secrets["feedback_webhook"], json=payload, timeout=5)
+    response.raise_for_status()
+
+
+# Streamlit UI
 st.title("Malaysian Retirement Readiness Predictor")
 st.header("Predict for a single user")
 
-
+# Prediction form
 with st.form("single_form"):
     age = st.number_input("Age", 40, 100, 55)
     gender = st.selectbox("Gender", ["Male", "Female"])
@@ -148,7 +125,7 @@ with st.form("single_form"):
         st.session_state["score_rounded"] = score_rounded
         st.session_state["shown_prediction"] = True
 
-
+# Display & feedback
 if st.session_state.get("shown_prediction", False):
     input_dict = st.session_state.get("input_dict")
     score_rounded = st.session_state.get("score_rounded")
@@ -175,13 +152,11 @@ if st.session_state.get("shown_prediction", False):
                 key="user_score_input",
             )
         if st.form_submit_button("Submit Feedback"):
-
             if not input_dict or score_rounded is None:
                 st.error("Please predict first before submitting feedback.")
             else:
                 save_feedback(input_dict, score_rounded, user_score, feedback)
                 st.success("Thank you for your feedback!")
                 st.session_state["shown_prediction"] = False
-
 
 st.caption("by Wan Nur Shafiqah, 2025")
