@@ -132,22 +132,27 @@ with st.form("single_form"):
         st.info(f"{status}\n\n{reason}")
 
         st.markdown("### Was this prediction accurate for you?")
-        feedback = st.radio(
-            "How satisfied are you with the prediction?",
-            ["Very Satisfied", "Satisfied", "Not Satisfied"],
-        )
-        user_score = None
-        if feedback == "Not Satisfied":
-            user_score = st.number_input(
-                "What do you think your real readiness score should be?",
-                min_value=0.0,
-                max_value=1.0,
-                value=score_rounded,
-                step=0.01,
+        with st.form("feedback_form"):
+            feedback = st.radio(
+                "How satisfied are you with the prediction?",
+                ["Very Satisfied", "Satisfied", "Not Satisfied"],
+                key="feedback_radio"
             )
-        if st.button("Submit Feedback"):
-            save_feedback(input_dict, score_rounded, user_score, feedback)
-            st.success("Thank you for your feedback!")
+            user_score = None
+            if feedback == "Not Satisfied":
+                user_score = st.number_input(
+                    "What do you think your real readiness score should be?",
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=score_rounded,
+                    step=0.01,
+                    key="user_score_input"
+                )
+            feedback_submitted = st.form_submit_button("Submit Feedback")
+            if feedback_submitted:
+                save_feedback(input_dict, score_rounded, user_score, feedback)
+                st.success("Thank you for your feedback!")
+
 
 st.header("Bulk Predict (Upload CSV)")
 uploaded_file = st.file_uploader("Upload a CSV file", type="csv")
