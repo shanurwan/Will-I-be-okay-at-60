@@ -4,6 +4,16 @@ import joblib
 import gspread
 from datetime import datetime
 from pipeline.training.train import preprocess
+import streamlit as st
+
+if "sheet_id" not in st.secrets:
+    st.error(
+        " Missing `sheet_id` in Streamlit Secrets!\n"
+        "Open Settings → Secrets and add:\n"
+        "sheet_id = \"<your-sheet-id>\""
+    )
+    st.stop()
+
 
 MODEL_PATH = "data/models/model_v1.pkl"
 FEATURES_PATH = "data/models/features.txt"
