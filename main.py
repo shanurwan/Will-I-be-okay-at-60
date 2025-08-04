@@ -30,7 +30,6 @@ def align_features(df, features):
 
 
 def readiness_status(score):
-
     if score >= 0.7:
         return "READY for retirement", (
             "Your score is high. This usually means you have healthy income, "
@@ -59,8 +58,9 @@ def save_feedback(input_dict, model_score, user_score, feedback):
 
 
 st.title("Malaysian Retirement Readiness Predictor")
-
 st.header("Predict for a single user")
+
+
 with st.form("single_form"):
     age = st.number_input("Age", 40, 100, 55)
     gender = st.selectbox("Gender", ["Male", "Female"])
@@ -127,31 +127,40 @@ with st.form("single_form"):
         score = model.predict(df)[0]
         score_rounded = round(score, 3)
 
-        st.success(f"Estimated Retirement Readiness Score: {score_rounded}")
-        status, reason = readiness_status(score)
-        st.info(f"{status}\n\n{reason}")
+        st.session_state["input_dict"] = input_dict
+        st.session_state["score_rounded"] = score_rounded
+        st.session_state["shown_prediction"] = True
 
-        st.markdown("### Was this prediction accurate for you?")
-        with st.form("feedback_form"):
-            feedback = st.radio(
-                "How satisfied are you with the prediction?",
-                ["Very Satisfied", "Satisfied", "Not Satisfied"],
-                key="feedback_radio"
+
+if st.session_state.get("shown_prediction", False):
+    input_dict = st.session_state["input_dict"]
+    score_rounded = st.session_state["score_rounded"]
+    status, reason = readiness_status(score_rounded)
+    st.success(f"Estimated Retirement Readiness Score: {score_rounded}")
+    st.info(f"{status}\n\n{reason}")
+
+    st.markdown("### Was this prediction accurate for you?")
+    with st.form("feedback_form"):
+        feedback = st.radio(
+            "How satisfied are you with the prediction?",
+            ["Very Satisfied", "Satisfied", "Not Satisfied"],
+            key="feedback_radio",
+        )
+        user_score = None
+        if feedback == "Not Satisfied":
+            user_score = st.number_input(
+                "What do you think your real readiness score should be?",
+                min_value=0.0,
+                max_value=1.0,
+                value=score_rounded,
+                step=0.01,
+                key="user_score_input",
             )
-            user_score = None
-            if feedback == "Not Satisfied":
-                user_score = st.number_input(
-                    "What do you think your real readiness score should be?",
-                    min_value=0.0,
-                    max_value=1.0,
-                    value=score_rounded,
-                    step=0.01,
-                    key="user_score_input"
-                )
-            feedback_submitted = st.form_submit_button("Submit Feedback")
-            if feedback_submitted:
-                save_feedback(input_dict, score_rounded, user_score, feedback)
-                st.success("Thank you for your feedback!")
+        feedback_submitted = st.form_submit_button("Submit Feedback")
+        if feedback_submitted:
+            save_feedback(input_dict, score_rounded, user_score, feedback)
+            st.success("Thank you for your feedback!")
+            st.session_state["shown_prediction"] = False
 
 
 st.header("Bulk Predict (Upload CSV)")
