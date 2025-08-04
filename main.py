@@ -47,8 +47,18 @@ def save_feedback(input_dict, model_score, user_score, feedback):
         "feedback": feedback,
         "timestamp": datetime.utcnow().isoformat(),
     }
-    response = requests.post(st.secrets["feedback_webhook"], json=payload, timeout=5)
-    response.raise_for_status()
+    try:
+        response = requests.post(
+            st.secrets["feedback_webhook"], json=payload, timeout=10
+        )
+        response.raise_for_status()
+    except requests.exceptions.ReadTimeout:
+        st.warning(
+            "Feedback submission timed out. Your feedback may still have been recorded; "
+            "please check the Google Sheet or try again."
+        )
+    except requests.exceptions.RequestException as e:
+        st.error(f"Failed to submit feedback: {e}")
 
 
 # Streamlit UI
