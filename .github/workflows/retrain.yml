@@ -1,0 +1,35 @@
+name: Retrain Model
+
+on:
+  schedule:
+    
+    - cron: '0 18 1 * *'  
+  workflow_dispatch:     
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run retraining script
+        run: python pipeline/retrain.py
+
+      - name: Commit updated model
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add data/models/
+          git commit -m "Monthly retrained model from feedback"
+          git push
