@@ -35,7 +35,6 @@ jobs:
       - name: Run tests (placeholder)
         run: echo "No tests yet"
 
-
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
@@ -49,6 +48,6 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository }}:latest
-            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/shanurwan/will-i-be-okay-at-60:latest
+            ghcr.io/shanurwan/will-i-be-okay-at-60:${{ github.sha }}
 
