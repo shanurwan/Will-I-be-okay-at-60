@@ -6,6 +6,7 @@ from datetime import datetime
 from sklearn.metrics import mean_absolute_error, r2_score
 from pipeline.training.train import train_model, preprocess
 
+
 def load_feedback_from_gsheet(sheet_name="Feedback", worksheet_index=0):
     import gspread
     from oauth2client.service_account import ServiceAccountCredentials
@@ -14,10 +15,9 @@ def load_feedback_from_gsheet(sheet_name="Feedback", worksheet_index=0):
 
     scope = [
         "https://spreadsheets.google.com/feeds",
-        "https://www.googleapis.com/auth/drive"
+        "https://www.googleapis.com/auth/drive",
     ]
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
- 
 
     client = gspread.authorize(creds)
     sheet = client.open(sheet_name).get_worksheet(worksheet_index)
@@ -27,7 +27,9 @@ def load_feedback_from_gsheet(sheet_name="Feedback", worksheet_index=0):
     return pd.DataFrame(records)
 
 
-def log_performance(y_true, y_pred, model_version="latest", log_path="data/metrics/performance_log.csv"):
+def log_performance(
+    y_true, y_pred, model_version="latest", log_path="data/metrics/performance_log.csv"
+):
     mae = mean_absolute_error(y_true, y_pred)
     r2 = r2_score(y_true, y_pred)
 
@@ -56,10 +58,13 @@ def retrain_model():
     df = df[df["feedback"].isin(["Very Satisfied", "Satisfied", "Not Satisfied"])]
 
     df["retirement_readiness_score"] = df.apply(
-        lambda row: row["user_score"] if row["feedback"] == "Not Satisfied" and not pd.isna(row["user_score"])
-        else row["model_score"], axis=1
+        lambda row: (
+            row["user_score"]
+            if row["feedback"] == "Not Satisfied" and not pd.isna(row["user_score"])
+            else row["model_score"]
+        ),
+        axis=1,
     )
-
 
     df = df.dropna(subset=["retirement_readiness_score"])
 
@@ -69,7 +74,6 @@ def retrain_model():
     model, features = train_model(df)
     y_pred = model.predict(df)
 
-   
     log_performance(y_true, y_pred)
 
     os.makedirs("data/models", exist_ok=True)
@@ -79,6 +83,7 @@ def retrain_model():
             f.write(f"{feat}\n")
 
     print("Retrained model saved.")
+
 
 if __name__ == "__main__":
     retrain_model()
