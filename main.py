@@ -10,7 +10,7 @@ if "sheet_id" not in st.secrets:
     st.error(
         " Missing `sheet_id` in Streamlit Secrets!\n"
         "Open Settings → Secrets and add:\n"
-        "sheet_id = \"<your-sheet-id>\""
+        'sheet_id = "<your-sheet-id>"'
     )
     st.stop()
 
