@@ -2,7 +2,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![CI](https://github.com/shanurwan/Will-I-be-okay-at-60/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
 
-A production-ready ML pipeline that predicts a retirement readiness score for Malaysians age 60 and above using financial, medical, psychological, and socio-demographic features. To the author knowledge, as of 4 August 2025 this is Malaysian first open source retirement readiness prediction system.
+This is a work-in-progress public data tool built to grow over time. To the author knowledge, as of 4 August 2025 this is Malaysian first open source retirement readiness machine learning prediction system.
 
 
 Check your retirement prediction [here](https://will-i-be-okay-at-60-m5cpstcz8v2gdrvxk8vrcn.streamlit.app/)
