@@ -1,25 +1,11 @@
-
 from fastapi import FastAPI
 from pydantic import BaseModel
 import joblib
 import pandas as pd
-import mlflow.sklearn
-import os
-
 from pipeline.training.train import preprocess, FEATURES
 
+app = FastAPI()
 
-# Configuration
-
-MODEL_PATH = "data/models/model_v1.pkl"  
-
-
-# FastAPI setup
-
-app = FastAPI(title="Retirement Readiness API", version="1.0")
-
-
-# Input schema
 
 class InputData(BaseModel):
     age: int
@@ -39,27 +25,19 @@ class InputData(BaseModel):
     is_supported: bool
 
 
-
-# Load model
-
+MODEL_PATH = "data/models/model_v1.pkl"
 model = joblib.load(MODEL_PATH)
 
 
+@app.get("/")
+def read_root():
+    return {"message": "Retirement Prediction API"}
 
-# API Endpoint
 
 @app.post("/predict")
 def predict(data: InputData):
-    
-    df = pd.DataFrame([data.dict()])
+    input_dict = data.dict()
+    df = pd.DataFrame([input_dict])
     df = preprocess(df)
-
-   
-    for col in FEATURES:
-        if col not in df.columns:
-            df[col] = 0
-    df = df[FEATURES] 
-
-   
-    score = model.predict(df)[0]
-    return {"retirement_score": round(float(score), 4)}
+    prediction = model.predict(df[FEATURES])[0]
+    return {"retirement_readiness_score": round(prediction, 3)}
