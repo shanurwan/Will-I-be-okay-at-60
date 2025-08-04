@@ -2,26 +2,31 @@ import streamlit as st
 import pandas as pd
 import joblib
 import gspread
+import tempfile
+import json
 from google.oauth2.service_account import Credentials
 from datetime import datetime
 from pipeline.training.train import preprocess
 
-MODEL_PATH = "data/models/model_v1.pkl"
+MODEL_PATH    = "data/models/model_v1.pkl"
 FEATURES_PATH = "data/models/features.txt"
-
 
 @st.cache_resource
 def get_sheet():
-    # Copy the dict so we can modify it
+    
     creds_info = dict(st.secrets["gcp_service_account"])
-    # Turn any literal "\n" text into actual newlines
     creds_info["private_key"] = creds_info["private_key"].replace("\\n", "\n")
-    creds = Credentials.from_service_account_info(
-        creds_info, scopes=["https://www.googleapis.com/auth/spreadsheets"]
+   
+    with tempfile.NamedTemporaryFile("w+", suffix=".json", delete=False) as tmp:
+        json.dump(creds_info, tmp)
+        tmp_path = tmp.name
+  
+    creds = Credentials.from_service_account_file(
+        tmp_path,
+        scopes=["https://www.googleapis.com/auth/spreadsheets"]
     )
     client = gspread.authorize(creds)
     return client.open_by_key(st.secrets["sheet_id"]).sheet1
-
 
 def save_feedback(input_dict, model_score, user_score, feedback):
     sheet = get_sheet()
@@ -48,24 +53,20 @@ def save_feedback(input_dict, model_score, user_score, feedback):
     ]
     sheet.append_row(row, value_input_option="USER_ENTERED")
 
-
 @st.cache_resource
 def load_model():
     return joblib.load(MODEL_PATH)
-
 
 @st.cache_resource
 def load_features():
     with open(FEATURES_PATH) as f:
         return [line.strip() for line in f]
 
-
 def align_features(df, features):
     for col in features:
         if col not in df.columns:
             df[col] = 0
     return df[features]
-
 
 def readiness_status(score):
     if score >= 0.7:
@@ -79,34 +80,18 @@ def readiness_status(score):
             "high expenses, or medical/household challenges."
         )
 
-
 st.title("Malaysian Retirement Readiness Predictor")
 st.header("Predict for a single user")
 
 with st.form("single_form"):
     age = st.number_input("Age", 40, 100, 55)
     gender = st.selectbox("Gender", ["Male", "Female"])
-    state = st.selectbox(
-        "State",
-        [
-            "Johor",
-            "Kedah",
-            "Kelantan",
-            "Melaka",
-            "Negeri Sembilan",
-            "Pahang",
-            "Penang",
-            "Perak",
-            "Perlis",
-            "Sabah",
-            "Sarawak",
-            "Selangor",
-            "Terengganu",
-            "W.P. Kuala Lumpur",
-            "W.P. Labuan",
-            "W.P. Putrajaya",
-        ],
-    )
+    state = st.selectbox("State", [
+        "Johor","Kedah","Kelantan","Melaka","Negeri Sembilan",
+        "Pahang","Penang","Perak","Perlis","Sabah","Sarawak",
+        "Selangor","Terengganu","W.P. Kuala Lumpur",
+        "W.P. Labuan","W.P. Putrajaya",
+    ])
     monthly_income = st.number_input("Monthly Income", 0, 100_000, 3000)
     epf_balance = st.number_input("EPF Balance", 0, 1_000_000, 40_000)
     debt_amount = st.number_input("Debt Amount", 0, 100_000, 0)
@@ -114,9 +99,7 @@ with st.form("single_form"):
     has_chronic_disease = st.checkbox("Has Chronic Disease?")
     medical_expense_monthly = st.number_input("Monthly Medical Expense", 0, 10_000, 0)
     mental_stress_level = st.slider("Mental Stress Level", 0.0, 1.0, 0.5)
-    expected_monthly_expense = st.number_input(
-        "Expected Monthly Expense", 0, 20_000, 1500
-    )
+    expected_monthly_expense = st.number_input("Expected Monthly Expense", 0, 20_000, 1500)
     has_spouse = st.checkbox("Has Spouse?")
     num_children = st.slider("Number of Children", 0, 10, 1)
     supports_others = st.checkbox("Supports Others?")
@@ -124,21 +107,15 @@ with st.form("single_form"):
 
     if st.form_submit_button("Predict Retirement Readiness"):
         input_dict = {
-            "age": age,
-            "gender": gender,
-            "state": state,
-            "monthly_income": monthly_income,
-            "epf_balance": epf_balance,
-            "debt_amount": debt_amount,
-            "household_size": household_size,
+            "age": age, "gender": gender, "state": state,
+            "monthly_income": monthly_income, "epf_balance": epf_balance,
+            "debt_amount": debt_amount, "household_size": household_size,
             "has_chronic_disease": has_chronic_disease,
             "medical_expense_monthly": medical_expense_monthly,
             "mental_stress_level": mental_stress_level,
             "expected_monthly_expense": expected_monthly_expense,
-            "has_spouse": has_spouse,
-            "num_children": num_children,
-            "supports_others": supports_others,
-            "is_supported": is_supported,
+            "has_spouse": has_spouse, "num_children": num_children,
+            "supports_others": supports_others, "is_supported": is_supported,
         }
         df = pd.DataFrame([input_dict])
         df = preprocess(df)
@@ -148,12 +125,12 @@ with st.form("single_form"):
         score = model.predict(df)[0]
         score_rounded = round(score, 3)
 
-        st.session_state["input_dict"] = input_dict
+        st.session_state["input_dict"]    = input_dict
         st.session_state["score_rounded"] = score_rounded
         st.session_state["shown_prediction"] = True
 
 if st.session_state.get("shown_prediction", False):
-    input_dict = st.session_state["input_dict"]
+    input_dict    = st.session_state["input_dict"]
     score_rounded = st.session_state["score_rounded"]
     status, reason = readiness_status(score_rounded)
 
@@ -171,11 +148,7 @@ if st.session_state.get("shown_prediction", False):
         if feedback == "Not Satisfied":
             user_score = st.number_input(
                 "What do you think your real readiness score should be?",
-                min_value=0.0,
-                max_value=1.0,
-                value=score_rounded,
-                step=0.01,
-                key="user_score_input",
+                0.0, 1.0, score_rounded, 0.01, key="user_score_input"
             )
         if st.form_submit_button("Submit Feedback"):
             save_feedback(input_dict, score_rounded, user_score, feedback)
