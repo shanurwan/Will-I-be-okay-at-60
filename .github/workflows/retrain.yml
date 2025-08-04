@@ -33,3 +33,7 @@ jobs:
           git add data/models/
           git commit -m "Monthly retrained model from feedback"
           git push
+
+env:
+  GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+
