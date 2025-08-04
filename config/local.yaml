@@ -2,6 +2,7 @@
 data:
   input_path: "data/input/retire.csv"
   model_path: "data/models/model_v1.pkl"
+  batch_output: data/output/predictions.csv 
 
 training:
   target: score 
@@ -15,6 +16,8 @@ monitoring:
 
 monitoring:
   drift_report: "data/output/drift_report.html"
+  performance_log: data/output/performance_log.csv
+
 
 mlflow:
   tracking_uri: "file:./mlruns"
