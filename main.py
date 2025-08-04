@@ -163,6 +163,4 @@ if st.session_state.get("shown_prediction", False):
             st.session_state["shown_prediction"] = False
 
 
-
-
 st.caption("by Wan Nur Shafiqah, 2025")
