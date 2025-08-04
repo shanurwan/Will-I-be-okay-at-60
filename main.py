@@ -61,11 +61,11 @@ def save_feedback(input_dict, model_score, user_score, feedback):
         st.error(f"Failed to submit feedback: {e}")
 
 
-# Streamlit UI
+
 st.title("Malaysian Retirement Readiness Predictor")
 st.header("Predict for a single user")
 
-# Prediction form
+
 with st.form("single_form"):
     age = st.number_input("Age", 40, 100, 55)
     gender = st.selectbox("Gender", ["Male", "Female"])
@@ -135,7 +135,7 @@ with st.form("single_form"):
         st.session_state["score_rounded"] = score_rounded
         st.session_state["shown_prediction"] = True
 
-# Display & feedback
+
 if st.session_state.get("shown_prediction", False):
     input_dict = st.session_state.get("input_dict")
     score_rounded = st.session_state.get("score_rounded")
