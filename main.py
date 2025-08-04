@@ -163,21 +163,6 @@ if st.session_state.get("shown_prediction", False):
             st.session_state["shown_prediction"] = False
 
 
-st.header("Bulk Predict (Upload CSV)")
-uploaded_file = st.file_uploader("Upload a CSV file", type="csv")
-if uploaded_file is not None:
-    data = pd.read_csv(uploaded_file)
-    st.write("Raw uploaded data:", data.head())
-    data_prep = preprocess(data)
-    features = load_features()
-    data_prep = align_features(data_prep, features)
-    model = load_model()
-    data["predicted_score"] = model.predict(data_prep)
-    st.write("Predictions:", data[["predicted_score"]].head())
-    st.download_button(
-        "Download predictions as CSV",
-        data.to_csv(index=False),
-        file_name="predictions.csv",
-    )
+
 
 st.caption("by Wan Nur Shafiqah, 2025")
