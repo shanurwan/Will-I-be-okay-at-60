@@ -12,8 +12,10 @@ FEATURES_PATH = "data/models/features.txt"
 
 @st.cache_resource
 def get_sheet():
-
-    creds_info = st.secrets["gcp_service_account"]
+    # Copy the dict so we can modify it
+    creds_info = dict(st.secrets["gcp_service_account"])
+    # Turn any literal "\n" text into actual newlines
+    creds_info["private_key"] = creds_info["private_key"].replace("\\n", "\n")
     creds = Credentials.from_service_account_info(
         creds_info, scopes=["https://www.googleapis.com/auth/spreadsheets"]
     )
@@ -44,7 +46,6 @@ def save_feedback(input_dict, model_score, user_score, feedback):
         feedback,
         datetime.utcnow().isoformat(),
     ]
-
     sheet.append_row(row, value_input_option="USER_ENTERED")
 
 
