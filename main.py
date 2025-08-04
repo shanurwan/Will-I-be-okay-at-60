@@ -1,13 +1,51 @@
 import streamlit as st
 import pandas as pd
 import joblib
-import os
-import csv
+import gspread
+from google.oauth2.service_account import Credentials
+from datetime import datetime
 from pipeline.training.train import preprocess
 
 MODEL_PATH = "data/models/model_v1.pkl"
 FEATURES_PATH = "data/models/features.txt"
-FEEDBACK_PATH = "data/output/user_feedback.csv"
+
+
+@st.cache_resource
+def get_sheet():
+
+    creds_info = st.secrets["gcp_service_account"]
+    creds = Credentials.from_service_account_info(
+        creds_info, scopes=["https://www.googleapis.com/auth/spreadsheets"]
+    )
+    client = gspread.authorize(creds)
+    return client.open_by_key(st.secrets["sheet_id"]).sheet1
+
+
+def save_feedback(input_dict, model_score, user_score, feedback):
+    sheet = get_sheet()
+    row = [
+        input_dict["age"],
+        input_dict["gender"],
+        input_dict["state"],
+        input_dict["monthly_income"],
+        input_dict["epf_balance"],
+        input_dict["debt_amount"],
+        input_dict["household_size"],
+        int(input_dict["has_chronic_disease"]),
+        input_dict["medical_expense_monthly"],
+        input_dict["mental_stress_level"],
+        input_dict["expected_monthly_expense"],
+        int(input_dict["has_spouse"]),
+        input_dict["num_children"],
+        int(input_dict["supports_others"]),
+        int(input_dict["is_supported"]),
+        model_score,
+        user_score if user_score is not None else "",
+        feedback,
+        datetime.utcnow().isoformat(),
+    ]
+
+    sheet.append_row(row, value_input_option="USER_ENTERED")
 
 
 @st.cache_resource
@@ -25,8 +63,7 @@ def align_features(df, features):
     for col in features:
         if col not in df.columns:
             df[col] = 0
-    df = df[features]
-    return df
+    return df[features]
 
 
 def readiness_status(score):
@@ -42,24 +79,8 @@ def readiness_status(score):
         )
 
 
-def save_feedback(input_dict, model_score, user_score, feedback):
-    data = {
-        **input_dict,
-        "model_score": model_score,
-        "user_score": user_score,
-        "feedback": feedback,
-    }
-    file_exists = os.path.exists(FEEDBACK_PATH)
-    with open(FEEDBACK_PATH, "a", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=data.keys())
-        if not file_exists:
-            writer.writeheader()
-        writer.writerow(data)
-
-
 st.title("Malaysian Retirement Readiness Predictor")
 st.header("Predict for a single user")
-
 
 with st.form("single_form"):
     age = st.number_input("Age", 40, 100, 55)
@@ -100,8 +121,7 @@ with st.form("single_form"):
     supports_others = st.checkbox("Supports Others?")
     is_supported = st.checkbox("Is Supported by Others?")
 
-    submitted = st.form_submit_button("Predict Retirement Readiness")
-    if submitted:
+    if st.form_submit_button("Predict Retirement Readiness"):
         input_dict = {
             "age": age,
             "gender": gender,
@@ -131,11 +151,11 @@ with st.form("single_form"):
         st.session_state["score_rounded"] = score_rounded
         st.session_state["shown_prediction"] = True
 
-
 if st.session_state.get("shown_prediction", False):
     input_dict = st.session_state["input_dict"]
     score_rounded = st.session_state["score_rounded"]
     status, reason = readiness_status(score_rounded)
+
     st.success(f"Estimated Retirement Readiness Score: {score_rounded}")
     st.info(f"{status}\n\n{reason}")
 
@@ -156,11 +176,9 @@ if st.session_state.get("shown_prediction", False):
                 step=0.01,
                 key="user_score_input",
             )
-        feedback_submitted = st.form_submit_button("Submit Feedback")
-        if feedback_submitted:
+        if st.form_submit_button("Submit Feedback"):
             save_feedback(input_dict, score_rounded, user_score, feedback)
             st.success("Thank you for your feedback!")
             st.session_state["shown_prediction"] = False
-
 
 st.caption("by Wan Nur Shafiqah, 2025")
