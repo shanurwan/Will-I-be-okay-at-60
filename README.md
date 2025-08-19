@@ -2,10 +2,10 @@
 
 [![Python](https://img.shields.io/badge/python-3.8%2B-blue)](https://www.python.org/) [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE) [![CI](https://github.com/shanurwan/Will-I-be-okay-at-60/actions/workflows/ci.yml/badge.svg)](.github/workflows/ci.yml)
 
-This is a work-in-progress public data tool built to grow over time. To the author knowledge, as of 4 August 2025 this is Malaysian first open source retirement readiness machine learning prediction system.
+This is a work-in-progress public data tool built to grow over time. To the author knowledge, as of 4 August 2025 this is Malaysian first open source retirement readiness machine learning decision support system.
 
 
-Check your retirement prediction [here](https://will-i-be-okay-at-60-m5cpstcz8v2gdrvxk8vrcn.streamlit.app/)
+Check your retirement readiness [here](https://will-i-be-okay-at-60-m5cpstcz8v2gdrvxk8vrcn.streamlit.app/)
 
 ---
 
