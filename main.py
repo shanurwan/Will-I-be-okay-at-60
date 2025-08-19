@@ -5,7 +5,6 @@ import requests
 import shap
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
 import logging
@@ -21,13 +20,11 @@ FEATURES_PATH = "data/models/features.txt"
 READINESS_THRESHOLD = 0.7
 
 # Styling
-st.set_page_config(
-    page_title="Malaysian Retirement Readiness Predictor",
-    layout="wide"
-)
+st.set_page_config(page_title="Malaysian Retirement Readiness Predictor", layout="wide")
 
 # Custom CSS for better styling
-st.markdown("""
+st.markdown(
+    """
 <style>
     .main-header {
         text-align: center;
@@ -55,7 +52,10 @@ st.markdown("""
         margin: 10px 0;
     }
 </style>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
+
 
 # ---------------------------
 # Cached, top-level loader
@@ -65,7 +65,7 @@ def load_model_components() -> Tuple[Optional[Any], Optional[List[str]], Optiona
     """Load model, feature list, and SHAP explainer (cached across reruns)."""
     try:
         model = joblib.load(MODEL_PATH)
-        with open(FEATURES_PATH, 'r', encoding='utf-8') as f:
+        with open(FEATURES_PATH, "r", encoding="utf-8") as f:
             features = [line.strip() for line in f if line.strip()]
 
         # Initialize SHAP explainer (tree models). Adjust if using other model types.
@@ -143,65 +143,73 @@ class RetirementPredictor:
                 "READY for Retirement",
                 "Congratulations! Your retirement readiness score indicates strong financial preparation. "
                 "You have demonstrated good financial health with adequate savings, manageable expenses, and stable income.",
-                "success"
+                "success",
             )
         else:
             return (
                 "NEEDS IMPROVEMENT",
                 "Your retirement readiness score suggests areas for improvement. "
                 "Focus on increasing savings, reducing debt, and optimizing your financial strategy.",
-                "warning"
+                "warning",
             )
 
-    def generate_personalized_recommendations(self, shap_values: np.ndarray, input_data: Dict[str, Any]) -> List[str]:
+    def generate_personalized_recommendations(
+        self, shap_values: np.ndarray, input_data: Dict[str, Any]
+    ) -> List[str]:
         """
         Generate personalized recommendations based on SHAP values.
         """
         recommendations: List[str] = []
 
-        if not self.features or shap_values is None or len(shap_values) != len(self.features):
+        if (
+            not self.features
+            or shap_values is None
+            or len(shap_values) != len(self.features)
+        ):
             # Fallback generic guidance if SHAP/feature alignment is off
             return [
                 " **Regular Review**: Monitor and adjust your retirement plan annually",
                 " **Professional Advice**: Consider consulting with a certified financial planner",
-                " **Emergency Fund**: Maintain 6-12 months of expenses in emergency savings"
+                " **Emergency Fund**: Maintain 6-12 months of expenses in emergency savings",
             ]
 
         # Feature importance (absolute SHAP values)
         feature_importance = dict(zip(self.features, np.abs(shap_values)))
-        sorted_features = sorted(feature_importance.items(), key=lambda x: x[1], reverse=True)
+        sorted_features = sorted(
+            feature_importance.items(), key=lambda x: x[1], reverse=True
+        )
         top_features = sorted_features[:5]
 
         shap_map = dict(zip(self.features, shap_values))
         for feature, _importance in top_features:
             s_val = shap_map.get(feature, 0.0)
 
-            if feature == 'epf_balance' and s_val < 0:
+            if feature == "epf_balance" and s_val < 0:
                 recommendations.append(
                     " **Increase EPF Contributions**: Your EPF balance significantly impacts your readiness. "
                     "Consider increasing voluntary contributions or exploring EPF investment schemes."
                 )
-            elif feature == 'monthly_income' and s_val < 0:
+            elif feature == "monthly_income" and s_val < 0:
                 recommendations.append(
                     " **Boost Monthly Income**: Consider skill development, career advancement, or additional income streams "
                     "to improve your financial position."
                 )
-            elif feature == 'debt_amount' and s_val < 0:
+            elif feature == "debt_amount" and s_val < 0:
                 recommendations.append(
                     " **Debt Management**: High debt is affecting your readiness. Create a debt repayment plan "
                     "and consider debt consolidation options."
                 )
-            elif feature == 'expected_monthly_expense' and s_val < 0:
+            elif feature == "expected_monthly_expense" and s_val < 0:
                 recommendations.append(
                     " **Expense Planning**: Review and optimize your expected retirement expenses. "
                     "Consider lifestyle adjustments or relocating to areas with lower living costs."
                 )
-            elif feature == 'medical_expense_monthly' and s_val < 0:
+            elif feature == "medical_expense_monthly" and s_val < 0:
                 recommendations.append(
                     " **Healthcare Planning**: High medical expenses impact readiness. "
                     "Consider comprehensive health insurance and preventive healthcare measures."
                 )
-            elif feature == 'age' and s_val < 0:
+            elif feature == "age" and s_val < 0:
                 recommendations.append(
                     " **Time-Sensitive Planning**: Given your age, focus on aggressive savings and investment strategies "
                     "to maximize your remaining working years."
@@ -209,11 +217,13 @@ class RetirementPredictor:
 
         # Ensure at least a few actionable tips
         if len(recommendations) < 3:
-            recommendations.extend([
-                " **Regular Review**: Monitor and adjust your retirement plan annually",
-                " **Professional Advice**: Consider consulting with a certified financial planner",
-                " **Emergency Fund**: Maintain 6-12 months of expenses in emergency savings",
-            ])
+            recommendations.extend(
+                [
+                    " **Regular Review**: Monitor and adjust your retirement plan annually",
+                    " **Professional Advice**: Consider consulting with a certified financial planner",
+                    " **Emergency Fund**: Maintain 6-12 months of expenses in emergency savings",
+                ]
+            )
 
         return recommendations[:5]
 
@@ -222,8 +232,12 @@ class FeedbackManager:
     """Handle user feedback submission."""
 
     @staticmethod
-    def save_feedback(input_dict: Dict[str, Any], model_score: float,
-                      user_score: Optional[float], feedback: str) -> bool:
+    def save_feedback(
+        input_dict: Dict[str, Any],
+        model_score: float,
+        user_score: Optional[float],
+        feedback: str,
+    ) -> bool:
         """
         Save user feedback to external service.
         """
@@ -237,9 +251,7 @@ class FeedbackManager:
 
         try:
             response = requests.post(
-                st.secrets["feedback_webhook"],
-                json=payload,
-                timeout=10
+                st.secrets["feedback_webhook"], json=payload, timeout=10
             )
             response.raise_for_status()
             return True
@@ -256,7 +268,9 @@ class FeedbackManager:
             return False
 
 
-def create_shap_visualization(shap_values: np.ndarray, features: List[str], input_data: Dict[str, Any]):
+def create_shap_visualization(
+    shap_values: np.ndarray, features: List[str], input_data: Dict[str, Any]
+):
     """Create SHAP waterfall-style bar plot."""
     try:
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -270,19 +284,24 @@ def create_shap_visualization(shap_values: np.ndarray, features: List[str], inpu
         shap_vals = [item[1] for item in top_features]
 
         # Horizontal bar plot
-        colors = ['red' if val < 0 else 'green' for val in shap_vals]
+        colors = ["red" if val < 0 else "green" for val in shap_vals]
         bars = ax.barh(range(len(feature_names)), shap_vals, color=colors, alpha=0.7)
 
         ax.set_yticks(range(len(feature_names)))
         ax.set_yticklabels(feature_names)
-        ax.set_xlabel('SHAP Value (Impact on Prediction)')
-        ax.set_title('Feature Impact on Retirement Readiness Score')
-        ax.axvline(x=0, color='black', linestyle='-', alpha=0.3)
+        ax.set_xlabel("SHAP Value (Impact on Prediction)")
+        ax.set_title("Feature Impact on Retirement Readiness Score")
+        ax.axvline(x=0, color="black", linestyle="-", alpha=0.3)
 
         # Add value labels on bars
         for i, (bar, val) in enumerate(zip(bars, shap_vals)):
-            ax.text(val + (0.001 if val > 0 else -0.001), i, f'{val:.3f}',
-                    va='center', ha='left' if val > 0 else 'right')
+            ax.text(
+                val + (0.001 if val > 0 else -0.001),
+                i,
+                f"{val:.3f}",
+                va="center",
+                ha="left" if val > 0 else "right",
+            )
 
         plt.tight_layout()
         return fig
@@ -296,16 +315,21 @@ def main():
     """Main application function."""
 
     # Header
-    st.markdown('<h1 class="main-header"> Malaysian Retirement Readiness Predictor</h1>',
-                unsafe_allow_html=True)
+    st.markdown(
+        '<h1 class="main-header"> Malaysian Retirement Readiness Predictor</h1>',
+        unsafe_allow_html=True,
+    )
 
-    st.markdown("""
+    st.markdown(
+        """
     <div style="text-align: center; margin-bottom: 2rem;">
         <p style="font-size: 1.2rem; color: #666;">
             Assess your retirement preparedness with AI-powered insights and personalized recommendations
         </p>
     </div>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
     # Initialize predictor
     predictor = RetirementPredictor()
@@ -326,61 +350,120 @@ def main():
             col_a, col_b = st.columns(2)
 
             with col_a:
-                age = st.number_input("Age", min_value=40, max_value=100, value=55,
-                                      help="Your current age")
+                age = st.number_input(
+                    "Age",
+                    min_value=40,
+                    max_value=100,
+                    value=55,
+                    help="Your current age",
+                )
                 gender = st.selectbox("Gender", ["Male", "Female"])
-                state = st.selectbox("State", [
-                    "Johor", "Kedah", "Kelantan", "Melaka", "Negeri Sembilan",
-                    "Pahang", "Penang", "Perak", "Perlis", "Sabah", "Sarawak",
-                    "Selangor", "Terengganu", "W.P. Kuala Lumpur", "W.P. Labuan", "W.P. Putrajaya"
-                ])
+                state = st.selectbox(
+                    "State",
+                    [
+                        "Johor",
+                        "Kedah",
+                        "Kelantan",
+                        "Melaka",
+                        "Negeri Sembilan",
+                        "Pahang",
+                        "Penang",
+                        "Perak",
+                        "Perlis",
+                        "Sabah",
+                        "Sarawak",
+                        "Selangor",
+                        "Terengganu",
+                        "W.P. Kuala Lumpur",
+                        "W.P. Labuan",
+                        "W.P. Putrajaya",
+                    ],
+                )
 
             with col_b:
-                household_size = st.slider("Household Size", min_value=1, max_value=10, value=3)
+                household_size = st.slider(
+                    "Household Size", min_value=1, max_value=10, value=3
+                )
                 has_spouse = st.checkbox("Married/Has Spouse")
-                num_children = st.slider("Number of Children", min_value=0, max_value=10, value=1)
+                num_children = st.slider(
+                    "Number of Children", min_value=0, max_value=10, value=1
+                )
 
             # Financial details
             st.subheader("Financial Information")
             col_c, col_d = st.columns(2)
 
             with col_c:
-                monthly_income = st.number_input("Monthly Income (RM)", min_value=0,
-                                                 max_value=100_000, value=3000,
-                                                 help="Your current monthly income")
-                epf_balance = st.number_input("EPF Balance (RM)", min_value=0,
-                                              max_value=1_000_000, value=40_000,
-                                              help="Your current EPF account balance")
-                debt_amount = st.number_input("Total Debt Amount (RM)", min_value=0,
-                                              max_value=100_000, value=0,
-                                              help="Total outstanding debt")
+                monthly_income = st.number_input(
+                    "Monthly Income (RM)",
+                    min_value=0,
+                    max_value=100_000,
+                    value=3000,
+                    help="Your current monthly income",
+                )
+                epf_balance = st.number_input(
+                    "EPF Balance (RM)",
+                    min_value=0,
+                    max_value=1_000_000,
+                    value=40_000,
+                    help="Your current EPF account balance",
+                )
+                debt_amount = st.number_input(
+                    "Total Debt Amount (RM)",
+                    min_value=0,
+                    max_value=100_000,
+                    value=0,
+                    help="Total outstanding debt",
+                )
 
             with col_d:
-                expected_monthly_expense = st.number_input("Expected Monthly Retirement Expense (RM)",
-                                                           min_value=0, max_value=20_000, value=1500,
-                                                           help="Estimated monthly expenses during retirement")
-                medical_expense_monthly = st.number_input("Monthly Medical Expense (RM)",
-                                                          min_value=0, max_value=10_000, value=0)
-                mental_stress_level = st.slider("Mental Stress Level", min_value=0.0,
-                                                max_value=1.0, value=0.5, step=0.1,
-                                                help="Rate your stress level (0=no stress, 1=high stress)")
+                expected_monthly_expense = st.number_input(
+                    "Expected Monthly Retirement Expense (RM)",
+                    min_value=0,
+                    max_value=20_000,
+                    value=1500,
+                    help="Estimated monthly expenses during retirement",
+                )
+                medical_expense_monthly = st.number_input(
+                    "Monthly Medical Expense (RM)",
+                    min_value=0,
+                    max_value=10_000,
+                    value=0,
+                )
+                mental_stress_level = st.slider(
+                    "Mental Stress Level",
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=0.5,
+                    step=0.1,
+                    help="Rate your stress level (0=no stress, 1=high stress)",
+                )
 
             # Health and support
             st.subheader("Health & Support")
             col_e, col_f = st.columns(2)
 
             with col_e:
-                has_chronic_disease = st.checkbox("Has Chronic Disease",
-                                                  help="Do you have any chronic medical conditions?")
-                supports_others = st.checkbox("Supports Others Financially",
-                                              help="Do you provide financial support to others?")
+                has_chronic_disease = st.checkbox(
+                    "Has Chronic Disease",
+                    help="Do you have any chronic medical conditions?",
+                )
+                supports_others = st.checkbox(
+                    "Supports Others Financially",
+                    help="Do you provide financial support to others?",
+                )
 
             with col_f:
-                is_supported = st.checkbox("Receives Financial Support",
-                                           help="Do you receive financial support from others?")
+                is_supported = st.checkbox(
+                    "Receives Financial Support",
+                    help="Do you receive financial support from others?",
+                )
 
-            submitted = st.form_submit_button("🔮 Predict Retirement Readiness",
-                                              type="primary", use_container_width=True)
+            submitted = st.form_submit_button(
+                "🔮 Predict Retirement Readiness",
+                type="primary",
+                use_container_width=True,
+            )
 
         # Process prediction
         if submitted:
@@ -407,12 +490,14 @@ def main():
                 score_rounded = round(score, 3)
 
                 # Store in session state
-                st.session_state.update({
-                    "input_dict": input_dict,
-                    "score_rounded": score_rounded,
-                    "shap_values": shap_values,
-                    "shown_prediction": True
-                })
+                st.session_state.update(
+                    {
+                        "input_dict": input_dict,
+                        "score_rounded": score_rounded,
+                        "shap_values": shap_values,
+                        "shown_prediction": True,
+                    }
+                )
 
                 st.rerun()
 
@@ -421,7 +506,8 @@ def main():
 
     with col2:
         st.header(" Information")
-        st.info("""
+        st.info(
+            """
         **How it works:**
 
         1. Fill in your personal and financial details
@@ -432,7 +518,8 @@ def main():
         **Score Interpretation:**
         - 0.7 - 1.0: Ready for retirement
         - 0.0 - 0.7: Needs improvement
-        """)
+        """
+        )
 
     # Display results if prediction has been made
     if st.session_state.get("shown_prediction", False):
@@ -453,14 +540,17 @@ def display_results(predictor: RetirementPredictor):
     col1, col2, col3 = st.columns([1, 2, 1])
 
     with col2:
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="prediction-container">
             <h2 style="text-align: center; margin-bottom: 20px;">Retirement Readiness Score</h2>
             <h1 style="text-align: center; font-size: 4rem; color: {'#28a745' if score_rounded >= READINESS_THRESHOLD else '#ffc107'};">
                 {score_rounded}
             </h1>
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     # Status and explanation
     status, message, color = predictor.get_readiness_status(score_rounded)
@@ -472,18 +562,25 @@ def display_results(predictor: RetirementPredictor):
 
     # Personalized recommendations
     st.header("Personalized Recommendations")
-    recommendations = predictor.generate_personalized_recommendations(shap_values, input_dict)
+    recommendations = predictor.generate_personalized_recommendations(
+        shap_values, input_dict
+    )
 
     for i, rec in enumerate(recommendations, 1):
-        st.markdown(f"""
+        st.markdown(
+            f"""
         <div class="recommendation-box">
             <strong>{i}.</strong> {rec}
         </div>
-        """, unsafe_allow_html=True)
+        """,
+            unsafe_allow_html=True,
+        )
 
     # SHAP Analysis
     st.header(" Feature Impact Analysis")
-    st.write("This chart shows how each factor influences your retirement readiness score:")
+    st.write(
+        "This chart shows how each factor influences your retirement readiness score:"
+    )
 
     fig = create_shap_visualization(shap_values, predictor.features, input_dict)
     if fig:
@@ -500,24 +597,31 @@ def display_results(predictor: RetirementPredictor):
         feedback = st.radio(
             "How accurate was this prediction?",
             ["Very Accurate", "Somewhat Accurate", "Not Accurate"],
-            horizontal=True
+            horizontal=True,
         )
 
         user_score = None
         if feedback == "Not Accurate":
             user_score = st.slider(
                 "What do you think your actual readiness score should be?",
-                min_value=0.0, max_value=1.0, value=float(score_rounded), step=0.01
+                min_value=0.0,
+                max_value=1.0,
+                value=float(score_rounded),
+                step=0.01,
             )
 
         additional_comments = st.text_area("Additional Comments (Optional)")
 
         if st.form_submit_button("Submit Feedback", type="primary"):
             final_feedback = f"{feedback}. {additional_comments}".strip()
-            success = feedback_manager.save_feedback(input_dict, score_rounded, user_score, final_feedback)
+            success = feedback_manager.save_feedback(
+                input_dict, score_rounded, user_score, final_feedback
+            )
 
             if success:
-                st.success("Thank you for your feedback! This helps us improve our model.")
+                st.success(
+                    "Thank you for your feedback! This helps us improve our model."
+                )
                 st.session_state["shown_prediction"] = False
                 st.balloons()
 
@@ -527,9 +631,12 @@ if __name__ == "__main__":
 
 # Footer
 st.markdown("---")
-st.markdown("""
+st.markdown(
+    """
 <div style="text-align: center; color: #666; margin-top: 2rem;">
     <p>© 2025 Wan Nur Shafiqah | Malaysian Retirement Readiness Predictor</p>
     <p style="font-size: 0.8rem;">Powered by Machine Learning & SHAP Explainable AI</p>
 </div>
-""", unsafe_allow_html=True)
+""",
+    unsafe_allow_html=True,
+)
