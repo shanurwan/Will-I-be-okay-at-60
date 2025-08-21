@@ -59,33 +59,75 @@ Data Documentation = [Click here](https://github.com/shanurwan/Malaysian-Retirem
 ## Architecture & Structure
 
 ```
-retirement_project/
-├── data/                  # Data  storage
-│   ├── input/             # Raw inputs (CSV)
-│   └── models/            # Artifacts: models, feature stores
-├── pipeline/              # Core ML scripts
-│   ├── training/
-│   │   ├── train.py       # Train model & log metrics
-│   │   └── evaluate.py    # Evaluate & log metrics
+Will-I-be-okay-at-60/
+├── README.md
+├── LICENSE
+├── Makefile
+├── .env.sample                 # local-only envs (DATABASE_URL, LOG_LEVEL, etc.)
+├── requirements/               # split deps to keep Lambda lean
+│   ├── base.txt
+│   ├── api.txt                 # FastAPI + Mangum + prometheus_client
+│   └── dev.txt                 # pytest, black, isort, mypy, etc.
+├── pipeline/                   # your app code stays here
+│   ├── settings.py             # Pydantic settings (reads env vars)
+│   ├── db/
+│   │   ├── __init__.py
+│   │   ├── models.py
+│   │   └── migrations/         # Alembic (schema as code)
+│   │       ├── env.py
+│   │       └── versions/
 │   ├── serving/
-│   │   ├── api.py         # FastAPI app for real-time inference
-│   │   └── batch.py       # CLI for bulk inference
+│   │   ├── api.py              # FastAPI (GET /health, /metrics; POST /predict)
+│   │   ├── api_lambda.py       # Mangum handler: `handler` for Lambda URL
+│   │   ├── batch.py            # CLI batch inference (local/dev)
+│   │   └── batch_lambda.py     # Batch/drift/perf handlers (EventBridge)
+│   ├── training/
+│   │   ├── train.py
+│   │   └── evaluate.py
 │   └── monitoring/
-│       ├── drift.py       # Data drift detection (Evidently)
-│       └── performance.py # Performance monitoring
-├── orchestration/         # Workflow orchestration
-│   ├── dag.py             # Prefect DAG definition
-│   └── scheduler.py       # Cron scheduler setup
-├── config/                # Configuration files
-│   ├── local.yaml         # Paths & params for local runs
-│   └── production.yaml    # Production environment settings
-├── tests/                 # Unit & integration tests
-│   └── test_pipeline.py
-├── .github/               # CI workflows
-│   └── workflows/ci.yml
-├── requirements.txt       # Python dependencies
-├── main.py                # Streamlit Front end
-└── README.md              # This documentation
+│       ├── drift.py
+│       └── performance.py
+├── scripts/
+│   ├── sheets_to_pg.py         # one-off ETL: Google Sheets → Postgres (Neon)
+│   ├── create_tables.py        # bootstrap DB (or use Alembic)
+│   └── load_sample_data.py
+├── web/                        # static web UI (free on GitHub Pages)
+│   ├── index.html              # calls Lambda Function URL for /predict
+│   ├── app.js
+│   └── styles.css
+├── docs/
+│   ├── architecture.md         # diagrams + flow (serverless, zero-cost guardrails)
+│   ├── api.md                  # request/response schema & examples
+│   ├── runbook.md              # deploy, rollback, debug, smoke tests
+│   └── cost-guardrails.md      # what to avoid to stay at $0
+├── infra/
+│   └── terraform/              # infra-as-code (replaces local/production YAML)
+│       ├── providers.tf
+│       ├── variables.tf
+│       ├── locals.tf
+│       ├── outputs.tf
+│       ├── main.tf             # wires modules together
+│       ├── lambda/             # Lambda + Function URL + logs
+│       │   └── lambda.tf
+│       ├── scheduler/          # EventBridge schedules (batch, drift, perf)
+│       │   └── scheduler.tf
+│       ├── ssm/                # optional: free SSM Standard Parameters for env
+│       │   └── params.tf
+│       └── neon/               # Neon project/db via provider (or doc placeholders)
+│           └── neon.tf
+├── .github/
+│   └── workflows/
+│       ├── ci.yml              # lint, type-check, tests, dep scan
+│       └── cd.yml              # package zip, deploy via Terraform (OIDC) or gh-actions
+├── tests/
+│   ├── unit/
+│   │   └── test_api.py
+│   └── integration/
+│       └── test_db.py
+└── ops/
+    ├── grafana/                # JSON dashboards (latency, RPS, errors)
+    └── alerts/                 # PromQL notes / SLOs (for future)
+
 ```
 
 ## Installation

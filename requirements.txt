@@ -12,5 +12,5 @@ pytest==8.4.1
 python-dotenv
 gspread
 google-auth
-
+shap
 
